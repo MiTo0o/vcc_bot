@@ -12,8 +12,8 @@ load_dotenv('.env')
 bot = commands.Bot(command_prefix='!', intents=discord.Intents.all())
 slash = SlashCommand(bot, sync_commands=True)
 
-questions_channel_ID = 836988772667097088
-guild_ids = [836988656261529650]
+questions_channel_ID = int(os.getenv('QUESTIONS_CHANNEL_ID'))
+guild_ids = [int(os.getenv("GUILD_ID"))]
 
 
 @bot.event
