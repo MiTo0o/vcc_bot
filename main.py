@@ -4,6 +4,9 @@ from discord.utils import get
 from discord.ext import commands
 from discord_slash import SlashCommand, SlashContext
 from discord_slash.utils.manage_commands import create_option, create_choice
+from dotenv import load_dotenv
+import os
+load_dotenv('.env')
 
 # TODO: MAKE DESCRIPTIONS FOR ALL COMMANDS
 bot = commands.Bot(command_prefix='!', intents=discord.Intents.all())
@@ -241,4 +244,4 @@ async def what(ctx):
     print(id_list)
 
 
-bot.run("ODM2NzY0ODQzNDQ3OTQzMTc4.YIiv_Q.5EOs058Jj76uv7luYa-GDFzIAYc")
+bot.run(os.getenv('BOT_TOKEN'))
