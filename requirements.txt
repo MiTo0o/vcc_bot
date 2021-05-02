@@ -7,3 +7,4 @@ discord.py==1.7.1
 idna==3.1
 multidict==5.1.0
 yarl==1.6.3
+python-dotenv==0.17.1
