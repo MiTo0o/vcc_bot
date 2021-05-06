@@ -1,3 +1,4 @@
-1. you need to create a discord channel category called: Active Questions
-2. get your guild id
-3. get questions id
+Things you need in your .env file:
+    1. bot token
+    2. guild/sever id
+    3. the channel id of your questions text channel
