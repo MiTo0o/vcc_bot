@@ -6,6 +6,7 @@ from discord_slash import SlashCommand, SlashContext
 from discord_slash.utils.manage_commands import create_option, create_choice
 from dotenv import load_dotenv
 import os
+
 load_dotenv('.env')
 
 # TODO: MAKE DESCRIPTIONS FOR ALL COMMANDS
@@ -22,12 +23,18 @@ async def on_ready():
     await bot.change_presence(activity=discord.Game(name="-help"))
 
 
-@slash.slash(name="ping", guild_ids=guild_ids)
-async def _ping(ctx):
-    await ctx.send(f"Pong! ({bot.latency * 1000}ms)")
-
-
-@slash.slash(name="ask", guild_ids=guild_ids)
+@slash.slash(name="ask",
+             guild_ids=guild_ids,
+             description="Ask a question",
+             options=[
+                 create_option(
+                     name="Question",
+                     description="Please type a question",
+                     option_type=3,
+                     required=True
+                 )
+             ]
+             )
 async def ask(ctx, *, question):
     guild = ctx.guild
 
@@ -44,24 +51,39 @@ async def ask(ctx, *, question):
     temp = False
     if len(messages) != 0:
         for msg in messages:
-            print(msg.content.split(":** "))
-            print(msg.content.split(":** ")[1].lower())
+            # print(msg.content.split(":** "))
+            # print(msg.content.split(":** ")[1].lower())
             if question.lower() == msg.content.split(":** ")[1].lower():
-                await ctx.send("The question: " + msg.content.split(":** ")[1] + " has already been asked.")
-                await ctx.send(msg.jump_url)
+                embed = discord.Embed(
+                    color=0x2fd082
+                )
+                embed.add_field(name="Status:",
+                                value="The question: " + msg.content.split(":** ")[1] + " has already been asked.",
+                                inline=False)
+                embed.add_field(name="Link to question: ",
+                                value=msg.jump_url,
+                                inline=False)
+                await ctx.send(embed=embed)
                 temp = True
                 break
     if get(guild.text_channels, name=temp2):
+        # TODO: make it so its not dumb
+        temp = False
         # slight bug as this checks the all text channels instead of just archives and Active Questions but it's a pain
         # in the behind to fix so I'll leave it as is for now (The chance this bug matters is also quite small)
-        await ctx.send("This question is currently getting answered or archived. (Check the text channels under active "
-                       "questions)")
-    elif temp is False:
+        embed = discord.Embed(
+            color=0x2fd082
+        )
+        embed.add_field(name="Status:",
+                        value="This question is currently getting answered or archived. (Check the text channels "
+                              "under active questions)")
+        await ctx.send(embed=embed)
+    if temp is False:
         get_id_message = await channel.history(limit=1).flatten()
-        print(get_id_message)
+        # print(get_id_message)
         if len(get_id_message) != 0:
             id_message = get_id_message[0].content
-            print(id_message)
+            # print(id_message)
             # why don't i just split and then split? am i dumb?
             pound_index = id_message.index('#')
             colon_index = id_message.index(':')
@@ -73,7 +95,7 @@ async def ask(ctx, *, question):
         for new_msg in new_messages:
             if new_msg.content.split(":** ")[1] == question:
                 embed = discord.Embed(
-                    colour=discord.Colour.blue()
+                    color=0x2fd082
                 )
                 embed.add_field(name="Status:",
                                 value='Your question has been logged in the Questions channel',
@@ -86,56 +108,66 @@ async def ask(ctx, *, question):
 
 
 @slash.slash(name="answer",
-             description="answer a question that exist in the Questions text channel",
+             description="Answer a question that is in the Questions text channel",
              guild_ids=guild_ids,
+             options=[
+                 create_option(
+                     name="question_number",
+                     description="Please enter the question number",
+                     option_type=4,
+                     required=True
+                 )
+             ]
              )
 async def answer(ctx, *, question_number):
-    print(question_number)
-    print(question_number.isdigit())
-    if question_number.isdigit():
-        guild = ctx.guild
-        channel = bot.get_channel(questions_channel_ID)
-        messages = await channel.history(limit=None).flatten()
-        temp = False
-        if len(messages) != 0:
-            for msg in messages:
-                if question_number == msg.content.split("# ")[1].split(":** ")[0]:
-                    temp = True
-                    name = "Active Questions"
-                    category = get(guild.categories, name=name)
-                    await guild.create_text_channel(msg.content.split(":** ")[1], category=category)
-                    await msg.delete()
+    guild = ctx.guild
+    channel = bot.get_channel(questions_channel_ID)
+    messages = await channel.history(limit=None).flatten()
+    temp = False
+    if len(messages) != 0:
+        for msg in messages:
+            if str(question_number) == msg.content.split("# ")[1].split(":** ")[0]:
+                temp = True
+                name = "Active Questions"
+                category = get(guild.categories, name=name)
+                await guild.create_text_channel(msg.content.split(":** ")[1], category=category)
+                await msg.delete()
 
-                    temp1 = " ".join(msg.content.split(":** ")[1].lower().split()).replace(" ", "-")
-                    temp2 = ""
-                    for i in temp1:
-                        if i.isalnum() or i == "-":
-                            temp2 += i
-                    new_channel = get(guild.channels, name=temp2)
-                    await new_channel.send("Answer your question here!")
-                    new_messages = await new_channel.history(limit=1).flatten()
-                    for new_msg in new_messages:
-                        if new_msg.content == "Answer your question here!":
-                            embed = discord.Embed(
-                                colour=discord.Colour.blue()
-                            )
-                            embed.add_field(name="Status:",
-                                            value='A text channel under "Active Question" has been created',
-                                            inline=False)
-                            embed.add_field(name="Link to channel: ",
-                                            value=new_msg.jump_url,
-                                            inline=False)
-                            await ctx.send(embed=embed)
-                            break
-                    break
-        if temp is False:
-            await ctx.send("This question does not exist in the list")
-    else:
-        await ctx.send("Please enter a number")
+                temp1 = " ".join(msg.content.split(":** ")[1].lower().split()).replace(" ", "-")
+                temp2 = ""
+                for i in temp1:
+                    if i.isalnum() or i == "-":
+                        temp2 += i
+                new_channel = get(guild.channels, name=temp2)
+                await new_channel.send("Answer your question here!")
+                new_messages = await new_channel.history(limit=1).flatten()
+                for new_msg in new_messages:
+                    if new_msg.content == "Answer your question here!":
+                        embed = discord.Embed(
+                            color=0x2fd082
+                        )
+                        embed.add_field(name="Status:",
+                                        value='A text channel under "Active Question" has been created',
+                                        inline=False)
+                        embed.add_field(name="Link to channel: ",
+                                        value=new_msg.jump_url,
+                                        inline=False)
+                        await ctx.send(embed=embed)
+                        break
+                break
+    if temp is False:
+        embed = discord.Embed(
+            color=0x2fd082
+        )
+        embed.add_field(name="Status:",
+                        value="This question does not exist in the list")
+        await ctx.send(embed=embed)
 
 
 @slash.slash(name="archive",
-             guild_ids=guild_ids)
+             guild_ids=guild_ids,
+             description="Archives the current text channel (the text channel has to be under Active Questions)"
+             )
 async def archive(ctx):
     # TODO: make sure you can't archive something that isnt in ACtive Questions section
     guild = ctx.guild
@@ -147,7 +179,7 @@ async def archive(ctx):
     # len(get(guild.categories, name=name).channels)
     # check_correct_channel =
     embed = discord.Embed(
-        colour=discord.Colour.blue()
+        color=0x2fd082
     )
     if channel.id in id_list:
         archive_names = ["Archive-#1", "Archive-#2", "Archive-#3", "Archive-#4", "Archive-#5", "Archive-#6",
@@ -183,22 +215,24 @@ async def archive(ctx):
 
 
 @slash.slash(name="unarchive",
-             guild_ids=guild_ids)
+             guild_ids=guild_ids,
+             description="Unarchives the current text channel (the text channel has to be under one of the archives)"
+             )
 async def unarchive(ctx):
     channel = ctx.channel
     guild = ctx.guild
     archive_names = ["Archive-#1", "Archive-#2", "Archive-#3", "Archive-#4", "Archive-#5", "Archive-#6",
                      "Archive-#7", "Archive-#8"]
-    all_arhive_id_list = []
-    for arhive_categetories in archive_names:
-        if get(guild.categories, name=arhive_categetories) is not None:
-            for i in get(guild.categories, name=arhive_categetories).channels:
-                all_arhive_id_list.append(i.id)
-    print(all_arhive_id_list)
+    all_archive_id_list = []
+    for archive_categetories in archive_names:
+        if get(guild.categories, name=archive_categetories) is not None:
+            for i in get(guild.categories, name=archive_categetories).channels:
+                all_archive_id_list.append(i.id)
+    print(all_archive_id_list)
     embed = discord.Embed(
         colour=discord.Colour.blue()
     )
-    if channel.id in all_arhive_id_list:
+    if channel.id in all_archive_id_list:
         temp = discord.utils.get(ctx.guild.categories, name="Active Questions")
         await channel.edit(category=temp)
         embed.add_field(name="Status:",
@@ -210,23 +244,6 @@ async def unarchive(ctx):
                         value="`You cannot unarchive a channel that isn't currently archived`",
                         inline=False)
         await ctx.send(embed=embed)
-
-    # TODO: make sure you can't unarchive something that isnt in archived section
-    # xd = True
-    # messages = await channel.history(limit=None).flatten()
-    # for
-    #
-    #
-
-
-@slash.slash(name="test", guild_ids=guild_ids)
-async def test(ctx):
-    await ctx.send("xd")
-
-
-@bot.command()
-async def clear(ctx, amount=1):
-    await ctx.channel.purge(limit=amount)
 
 
 # TODO: maybe create some fun functions as well
