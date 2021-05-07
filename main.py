@@ -266,7 +266,7 @@ async def help_panel(ctx):
     embed.add_field(name='***`/ask`***', value='Got a question? Use this command to ask it.', inline=False)
     embed.add_field(name='***`/answer`***', value='Answer a question in the questions list', inline=False)
     embed.add_field(name='***`/archive`***', value='Done with a question? Archive it!!', inline=False)
-    embed.add_field(name='***`/unarchive`***', value='Want to continue discussion a question? Unarchive it!!',
+    embed.add_field(name='***`/unarchive`***', value='Want to continue discussion on a question? Unarchive it!!',
                     inline=False)
     await ctx.send(embed=embed)
 
