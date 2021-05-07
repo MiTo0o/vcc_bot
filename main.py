@@ -23,7 +23,7 @@ bot_token = os.getenv('BOT_TOKEN')
 @bot.event
 async def on_ready():
     print("{0.user} is ready to serve.".format(bot))
-    await bot.change_presence(activity=discord.Game(name="-help"))
+    await bot.change_presence(activity=discord.Game(name="/help"))
 
 
 @slash.slash(name="ask",
@@ -36,8 +36,7 @@ async def on_ready():
                      option_type=3,
                      required=True
                  )
-             ]
-             )
+             ])
 async def ask(ctx, *, question):
     guild = ctx.guild
     if len(question) >= 100:
@@ -122,8 +121,7 @@ async def ask(ctx, *, question):
                      option_type=4,
                      required=True
                  )
-             ]
-             )
+             ])
 async def answer(ctx, *, question_number):
     guild = ctx.guild
     channel = bot.get_channel(questions_channel_ID)
