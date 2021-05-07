@@ -37,8 +37,10 @@ async def on_ready():
              )
 async def ask(ctx, *, question):
     guild = ctx.guild
-
-    temp1 = " ".join(question.lower().split()).replace(" ", "-")
+    if len(question) >= 100:
+        temp1 = (" ".join(question.lower().split()).replace(" ", "-"))[0:100]
+    else:
+        temp1 = " ".join(question.lower().split()).replace(" ", "-")
     temp2 = ""
     for i in temp1:
         if i.isalnum() or i == "-":
@@ -49,7 +51,7 @@ async def ask(ctx, *, question):
     channel = bot.get_channel(questions_channel_ID)
     messages = await channel.history(limit=None).flatten()
     temp = False
-    if len(messages) != 0:
+    if 0 != len(messages):
         for msg in messages:
             # print(msg.content.split(":** "))
             # print(msg.content.split(":** ")[1].lower())
@@ -68,7 +70,7 @@ async def ask(ctx, *, question):
                 break
     if get(guild.text_channels, name=temp2):
         # TODO: make it so its not dumb
-        temp = False
+        temp = True
         # slight bug as this checks the all text channels instead of just archives and Active Questions but it's a pain
         # in the behind to fix so I'll leave it as is for now (The chance this bug matters is also quite small)
         embed = discord.Embed(
@@ -130,19 +132,25 @@ async def answer(ctx, *, question_number):
                 temp = True
                 name = "Active Questions"
                 category = get(guild.categories, name=name)
-                await guild.create_text_channel(msg.content.split(":** ")[1], category=category)
+                if len(msg.content.split(":** ")[1]) >= 100:
+                    new_channel_message = "```" + msg.content.split(":** ")[1] + ": ```"
+                    await guild.create_text_channel(msg.content.split(":** ")[1][0:100], category=category)
+                    temp1 = " ".join(msg.content.split(":** ")[1][0:100].lower().split()).replace(" ", "-")
+                else:
+                    await guild.create_text_channel(msg.content.split(":** ")[1], category=category)
+                    new_channel_message = "```" + msg.content.split(":** ")[1] + ": ```"
+                    temp1 = " ".join(msg.content.split(":** ")[1].lower().split()).replace(" ", "-")
                 await msg.delete()
 
-                temp1 = " ".join(msg.content.split(":** ")[1].lower().split()).replace(" ", "-")
                 temp2 = ""
                 for i in temp1:
                     if i.isalnum() or i == "-":
                         temp2 += i
                 new_channel = get(guild.channels, name=temp2)
-                await new_channel.send("Answer your question here!")
+                await new_channel.send(new_channel_message)
                 new_messages = await new_channel.history(limit=1).flatten()
                 for new_msg in new_messages:
-                    if new_msg.content == "Answer your question here!":
+                    if new_msg.content == new_channel_message:
                         embed = discord.Embed(
                             color=0x2fd082
                         )
