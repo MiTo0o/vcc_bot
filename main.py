@@ -15,7 +15,7 @@ slash = SlashCommand(bot, sync_commands=True)
 
 questions_channel_ID = int(os.getenv('QUESTIONS_CHANNEL_ID'))
 guild_ids = [int(os.getenv("GUILD_ID"))]
-
+active_questions_category = int(os.getenv("ACTIVE_QUESTIONS_CATEGORY"))
 
 @bot.event
 async def on_ready():
@@ -77,7 +77,7 @@ async def ask(ctx, *, question):
             color=0x2fd082
         )
         embed.add_field(name="Status:",
-                        value="This question is currently getting answered or archived. (Check the text channels "
+                        value="This question is currently getting `answered` or `archived`. (Check the text channels "
                               "under active questions)")
         await ctx.send(embed=embed)
     if temp is False:
@@ -100,7 +100,7 @@ async def ask(ctx, *, question):
                     color=0x2fd082
                 )
                 embed.add_field(name="Status:",
-                                value='Your question has been logged in the Questions channel',
+                                value='Your question has been logged in the `Questions channel`',
                                 inline=False)
                 embed.add_field(name="Link to question: ",
                                 value=new_msg.jump_url,
@@ -130,8 +130,7 @@ async def answer(ctx, *, question_number):
         for msg in messages:
             if str(question_number) == msg.content.split("# ")[1].split(":** ")[0]:
                 temp = True
-                name = "Active Questions"
-                category = get(guild.categories, name=name)
+                category = get(guild.categories, id=active_questions_category)
                 if len(msg.content.split(":** ")[1]) >= 100:
                     new_channel_message = "```" + msg.content.split(":** ")[1] + ": ```"
                     await guild.create_text_channel(msg.content.split(":** ")[1][0:100], category=category)
@@ -154,8 +153,8 @@ async def answer(ctx, *, question_number):
                         embed = discord.Embed(
                             color=0x2fd082
                         )
-                        embed.add_field(name="Status:",
-                                        value='A text channel under "Active Question" has been created',
+                        embed.add_field(name="Status",
+                                        value='`A text channel under "`Active Question`" has been created',
                                         inline=False)
                         embed.add_field(name="Link to channel: ",
                                         value=new_msg.jump_url,
@@ -167,8 +166,8 @@ async def answer(ctx, *, question_number):
         embed = discord.Embed(
             color=0x2fd082
         )
-        embed.add_field(name="Status:",
-                        value="This question does not exist in the list")
+        embed.add_field(name="`Status:`",
+                        value="`This question does not exist in the list`")
         await ctx.send(embed=embed)
 
 
@@ -181,7 +180,7 @@ async def archive(ctx):
     guild = ctx.guild
     channel = ctx.channel
     id_list = []
-    for i in get(guild.categories, name="Active Questions").channels:
+    for i in get(guild.categories, id=active_questions_category).channels:
         id_list.append(i.id)
     print(id_list)
     # len(get(guild.categories, name=name).channels)
@@ -198,7 +197,7 @@ async def archive(ctx):
                 await guild.create_category(archive_names[index])
                 temp = get(guild.categories, name=archive_names[index])
                 await channel.edit(category=temp)
-                embed.add_field(name="Status:",
+                embed.add_field(name="`Status:`",
                                 value="This text channel has been moved under " + "__***`" + archive_names[index] +
                                       "`***__",
                                 inline=False)
@@ -249,24 +248,11 @@ async def unarchive(ctx):
         await ctx.send(embed=embed)
     else:
         embed.add_field(name="Status:",
-                        value="`You cannot unarchive a channel that isn't currently archived`",
+                        value="`You `cannot` unarchive a channel that isn't currently archived`",
                         inline=False)
         await ctx.send(embed=embed)
 
 
-# TODO: maybe create some fun functions as well
-
-
-@slash.slash(name="what",
-             guild_ids=guild_ids)
-async def what(ctx):
-    guild = ctx.guild
-    name = "Active Questions"
-    print(ctx.channel.id)
-    id_list = []
-    for i in get(guild.categories, name=name).channels:
-        id_list.append(i.id)
-    print(id_list)
-
+# TODO: maybe create some random commands?
 
 bot.run(os.getenv('BOT_TOKEN'))

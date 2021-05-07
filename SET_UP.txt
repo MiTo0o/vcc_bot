@@ -2,6 +2,7 @@ Things you need in your .env file:
     1. bot token
     2. guild/sever id
     3. the channel id of your questions text channel
+    4. get the id of your active questions category
 
 Note:
     1. You cannot have more than 50 active questions
