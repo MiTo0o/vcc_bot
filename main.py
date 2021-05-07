@@ -17,6 +17,7 @@ questions_channel_ID = int(os.getenv('QUESTIONS_CHANNEL_ID'))
 guild_ids = [int(os.getenv("GUILD_ID"))]
 active_questions_category = int(os.getenv("ACTIVE_QUESTIONS_CATEGORY"))
 
+
 @bot.event
 async def on_ready():
     print("{0.user} is ready to serve.".format(bot))
@@ -182,7 +183,7 @@ async def archive(ctx):
     id_list = []
     for i in get(guild.categories, id=active_questions_category).channels:
         id_list.append(i.id)
-    print(id_list)
+    # print(id_list)
     # len(get(guild.categories, name=name).channels)
     # check_correct_channel =
     embed = discord.Embed(
@@ -231,13 +232,13 @@ async def unarchive(ctx):
     archive_names = ["Archive-#1", "Archive-#2", "Archive-#3", "Archive-#4", "Archive-#5", "Archive-#6",
                      "Archive-#7", "Archive-#8"]
     all_archive_id_list = []
-    for archive_categetories in archive_names:
-        if get(guild.categories, name=archive_categetories) is not None:
-            for i in get(guild.categories, name=archive_categetories).channels:
+    for archive_categories in archive_names:
+        if get(guild.categories, name=archive_categories) is not None:
+            for i in get(guild.categories, name=archive_categories).channels:
                 all_archive_id_list.append(i.id)
-    print(all_archive_id_list)
+    # print(all_archive_id_list)
     embed = discord.Embed(
-        colour=discord.Colour.blue()
+        color=0x2fd082
     )
     if channel.id in all_archive_id_list:
         temp = discord.utils.get(ctx.guild.categories, name="Active Questions")
@@ -251,6 +252,23 @@ async def unarchive(ctx):
                         value="`You `cannot` unarchive a channel that isn't currently archived`",
                         inline=False)
         await ctx.send(embed=embed)
+
+
+@slash.slash(name="help",
+             guild_ids=guild_ids,
+             description="Displays all available commands of this bot"
+             )
+async def help_panel(ctx):
+    embed = discord.Embed(
+        color=0x2fd082,
+        title='Vcc Bot Commands'
+    )
+    embed.add_field(name='***`/ask`***', value='Got a question? Use this command to ask it.', inline=False)
+    embed.add_field(name='***`/answer`***', value='Answer a question in the questions list', inline=False)
+    embed.add_field(name='***`/archive`***', value='Done with a question? Archive it!!', inline=False)
+    embed.add_field(name='***`/unarchive`***', value='Want to continue discussion a question? Unarchive it!!',
+                    inline=False)
+    await ctx.send(embed=embed)
 
 
 # TODO: maybe create some random commands?
