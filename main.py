@@ -13,9 +13,11 @@ load_dotenv('.env')
 bot = commands.Bot(command_prefix='!', intents=discord.Intents.all())
 slash = SlashCommand(bot, sync_commands=True)
 
+# gets all tokens and id from .env file
 questions_channel_ID = int(os.getenv('QUESTIONS_CHANNEL_ID'))
 guild_ids = [int(os.getenv("GUILD_ID"))]
 active_questions_category = int(os.getenv("ACTIVE_QUESTIONS_CATEGORY"))
+bot_token = os.getenv('BOT_TOKEN')
 
 
 @bot.event
@@ -249,7 +251,7 @@ async def unarchive(ctx):
         await ctx.send(embed=embed)
     else:
         embed.add_field(name="Status:",
-                        value="`You `cannot` unarchive a channel that isn't currently archived`",
+                        value="You __***`cannot`***__ unarchive a channel that isn't currently archived",
                         inline=False)
         await ctx.send(embed=embed)
 
@@ -273,4 +275,4 @@ async def help_panel(ctx):
 
 # TODO: maybe create some random commands?
 
-bot.run(os.getenv('BOT_TOKEN'))
+bot.run(bot_token)
